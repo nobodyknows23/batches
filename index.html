@@ -1,66 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>📚 Study Portal – Watch Free Lectures</title>
-    <link rel="stylesheet" href="style.css" />
-    <!-- Shaka Player for DASH/HLS playback -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.9/shaka-player.compiled.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PW Clone Study Platform</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-    <div id="app">
-        <!-- HEADER -->
-        <header class="header">
-            <div class="container">
-                <div class="header-content">
-                    <div class="logo">
-                        <span class="logo-icon">📚</span>
-                        <span class="logo-text">Study Portal</span>
-                        <span class="badge" id="batchCount">Loading...</span>
-                    </div>
-                    <div class="header-actions">
-                        <input type="text" class="search-input" id="searchInput" placeholder="Search batches..." />
-                        <button class="btn-refresh" id="refreshBtn">⟳ Refresh</button>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- MAIN CONTENT -->
-        <main class="main-content">
-            <div class="container">
-                <div id="batchList">
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p>Loading batches...</p>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- VIDEO PLAYER MODAL -->
-        <div class="modal-overlay" id="videoModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="videoTitle">Loading...</h3>
-                    <button class="modal-close" id="closeModal">✕</button>
-                </div>
-                <div class="modal-body">
-                    <video id="videoPlayer" controls autoplay></video>
-                </div>
-            </div>
-        </div>
-
-        <!-- FOOTER -->
-        <footer class="footer">
-            <div class="container">
-                <p>Powered by <strong>vidcloud.eu.org</strong> • For educational purposes only</p>
-            </div>
-        </footer>
-    </div>
-
-    <script src="script.js"></script>
+  <div id="app"></div>
+  
+  <script type="module" src="app.js"></script>
 </body>
 </html>

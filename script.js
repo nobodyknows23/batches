@@ -11,7 +11,6 @@ const CONFIG = {
     // Get it from pwthor.live cookies (F12 → Application → Cookies)
     // ============================================================
     AUTH_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2JpbGUiOiI2MDA2OTE1OTMzIiwibmFtZSI6IldhcmlzIiwiaWF0IjoxNzc5NjEyMzE4LCJleHAiOjE3ODczODgzMTh9.ZzSV4768j7-YSNRETRZLJ_-ZExi_XnmyicIxTMKZksM',
-
     // CORS Proxy (use if you don't have your own backend)
     // Try one of these:
     // 'https://corsproxy.io/?'
