@@ -1,0 +1,9 @@
+// vercel.json (optional, for static deployment)
+{
+  "builds": [
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ]
+}

@@ -1,8 +1,3 @@
-/**
- * Main Application
- * PW Clone Study Platform
- */
-
 import PWClient from './api/pwClient.js';
 import { Batch, Subject, Topic, Video } from './models/DataModels.js';
 import VideoPlayer from './players/VideoPlayer.js';
@@ -16,27 +11,19 @@ class PWAapp {
     this.currentTopic = null;
     this.currentVideo = null;
     this.player = null;
-    
-    // UI Containers
+    this.history = [];
     this.container = document.getElementById('app');
-    
-    // Initialize
     this.init();
   }
 
   async init() {
     console.log('🚀 PW Clone App Initialized');
-    
-    // Load initial data
     await this.loadBatches();
-    
-    // Setup navigation
     this.setupNavigation();
   }
 
   async loadBatches() {
     try {
-      // Get user's batches from localStorage or default
       const batchId = localStorage.getItem('currentBatch') || '693ffdb27560d3631722a576';
       this.client.setBatch(batchId);
       
@@ -69,20 +56,16 @@ class PWAapp {
   async loadSubject(subjectId) {
     try {
       const subjectData = this.currentBatch.getSubjectById(subjectId);
-      if (!subjectData) {
-        throw new Error('Subject not found');
-      }
+      if (!subjectData) throw new Error('Subject not found');
       
       this.currentSubject = new Subject(subjectData);
       
-      // Load topics
       const topicsData = await this.client.getTopics(
         this.currentBatch.id,
         subjectData.slug || subjectId
       );
       
       this.currentSubject.topics = topicsData.data || [];
-      
       this.renderTopics();
     } catch (error) {
       console.error('Failed to load subject:', error);
@@ -93,7 +76,6 @@ class PWAapp {
   renderTopics() {
     this.clearContainer();
     
-    // Show subject header
     const header = document.createElement('h1');
     header.textContent = this.currentSubject.name;
     this.container.appendChild(header);
@@ -112,13 +94,10 @@ class PWAapp {
   async loadTopic(topicId) {
     try {
       const topicData = this.currentSubject.getTopicById(topicId);
-      if (!topicData) {
-        throw new Error('Topic not found');
-      }
+      if (!topicData) throw new Error('Topic not found');
       
       this.currentTopic = new Topic(topicData);
       
-      // Load video content
       const videoData = await this.client.getVideoContent(
         this.currentBatch.id,
         this.currentSubject.slug,
@@ -126,7 +105,6 @@ class PWAapp {
       );
       
       this.currentTopic.videos = videoData.data || [];
-      
       this.renderVideos();
     } catch (error) {
       console.error('Failed to load topic:', error);
@@ -137,7 +115,6 @@ class PWAapp {
   renderVideos() {
     this.clearContainer();
     
-    // Show topic header
     const header = document.createElement('div');
     header.className = 'topic-header';
     header.innerHTML = `
@@ -150,7 +127,6 @@ class PWAapp {
     this.container.appendChild(header);
     
     if (this.currentTopic.videos.length) {
-      // Show first video
       const firstVideo = this.currentTopic.videos[0];
       const videoUI = new VideoPlayerUI(this.container, {
         ...firstVideo,
@@ -161,7 +137,6 @@ class PWAapp {
         this.playVideo(videoId);
       });
       
-      // Initialize player
       this.player = videoUI.getPlayer();
     } else {
       this.showError('No videos available');
@@ -171,19 +146,15 @@ class PWAapp {
   async playVideo(videoId) {
     try {
       const videoData = this.currentTopic.getVideoById(videoId);
-      if (!videoData) {
-        throw new Error('Video not found');
-      }
+      if (!videoData) throw new Error('Video not found');
       
       this.currentVideo = new Video(videoData);
       
-      // Update player source
       if (this.player) {
         this.player.src = this.currentVideo.videoUrl || this.currentVideo.mpdUrl;
         this.player.play();
       }
       
-      // Mark video as watched
       this.markVideoWatched(videoId);
     } catch (error) {
       console.error('Failed to play video:', error);
@@ -192,7 +163,6 @@ class PWAapp {
   }
 
   async markVideoWatched(videoId) {
-    // Save progress to localStorage
     const progress = {
       batchId: this.currentBatch.id,
       subjectId: this.currentSubject.id,
@@ -221,15 +191,6 @@ class PWAapp {
   }
 
   setupNavigation() {
-    // Setup back buttons
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('.back-button')) {
-        e.preventDefault();
-        this.goBack();
-      }
-    });
-    
-    // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         this.goBack();
@@ -246,7 +207,6 @@ class PWAapp {
   }
 }
 
-// Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   window.app = new PWAapp();
 });

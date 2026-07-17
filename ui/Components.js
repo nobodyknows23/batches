@@ -1,7 +1,3 @@
-/**
- * UI Components for PW Clone
- */
-
 class Component {
   constructor(parent) {
     this.parent = parent;
@@ -23,6 +19,7 @@ class BatchList extends Component {
     this.element = document.createElement('div');
     this.element.className = 'batch-list';
     this.element.innerHTML = `
+      <button class="back-button" onclick="window.app?.goBack()">← Back</button>
       <h2>My Batches</h2>
       <div class="batch-grid">
         ${this.batches.map(batch => `
@@ -64,6 +61,7 @@ class SubjectList extends Component {
     this.element = document.createElement('div');
     this.element.className = 'subject-list';
     this.element.innerHTML = `
+      <button class="back-button" onclick="window.app?.goBack()">← Back</button>
       <h2>Subjects</h2>
       <div class="subject-grid">
         ${this.subjects.map(subject => `
@@ -103,6 +101,7 @@ class TopicList extends Component {
     this.element = document.createElement('div');
     this.element.className = 'topic-list';
     this.element.innerHTML = `
+      <button class="back-button" onclick="window.app?.goBack()">← Back</button>
       <h2>Topics</h2>
       <div class="topic-grid">
         ${this.topics.map(topic => `
@@ -150,6 +149,7 @@ class VideoPlayerUI extends Component {
     this.element = document.createElement('div');
     this.element.className = 'video-player-container';
     this.element.innerHTML = `
+      <button class="back-button" onclick="window.app?.goBack()">← Back</button>
       <div class="video-wrapper">
         <video id="video-player" controls autoplay>
           <source src="${this.video.videoUrl || ''}" type="video/mp4">
@@ -183,7 +183,6 @@ class VideoPlayerUI extends Component {
     `;
     this.parent.appendChild(this.element);
     
-    // Initialize player
     this.player = document.getElementById('video-player');
     return this.element;
   }

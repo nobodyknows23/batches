@@ -1,7 +1,3 @@
-/**
- * Data Models for PW Clone
- */
-
 class Batch {
   constructor(data) {
     this.id = data._id || data.id;

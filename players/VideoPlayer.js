@@ -1,7 +1,3 @@
-/**
- * Video Player with DRM Support
- */
-
 class VideoPlayer {
   constructor(config) {
     this.config = {
@@ -15,7 +11,6 @@ class VideoPlayer {
   }
 
   async initialize() {
-    // Load Shaka Player for DRM support
     if (typeof shaka === 'undefined') {
       await this.loadShakaPlayer();
     }
@@ -46,10 +41,8 @@ class VideoPlayer {
     const source = videoData.mpdUrl || videoData.videoUrl;
     
     if (videoData.drm) {
-      // Load with DRM
       await this.loadDRMContent(source);
     } else {
-      // Load directly
       await this.player.load(source);
     }
     
@@ -61,14 +54,12 @@ class VideoPlayer {
   }
 
   async loadDRMContent(source) {
-    // Get DRM key from API
     const response = await fetch(
       `/api/pw/kid?mpdUrl=${encodeURIComponent(source)}`
     );
     const { kid } = await response.json();
     
     if (kid) {
-      // Configure DRM
       this.player.configure({
         drm: {
           servers: {
@@ -115,7 +106,6 @@ class VideoPlayer {
     }
   }
 
-  // Event listeners
   on(event, callback) {
     if (this.player) {
       this.player.addEventListener(event, callback);
