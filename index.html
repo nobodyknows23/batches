@@ -3,135 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Batches</title>
+    <title>My Study Portal</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: system-ui, sans-serif; background: #f0f2f5; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
-        h1 { margin-bottom: 20px; color: #1a1a2e; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .badge { font-size: 14px; background: #3b82f6; color: white; padding: 4px 12px; border-radius: 20px; }
-        .search { width: 100%; padding: 12px; margin-bottom: 20px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
-        .stats { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
-        .stat { background: white; padding: 12px 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .stat strong { color: #1a1a2e; font-size: 20px; display: block; }
-        .stat span { color: #666; font-size: 14px; }
-        .batch { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
-        .batch h2 { color: #1a1a2e; margin-bottom: 8px; font-size: 18px; }
-        .batch .meta { color: #666; font-size: 14px; margin-bottom: 10px; }
-        .price-free { color: #22c55e; font-weight: bold; }
-        .price-paid { color: #ef4444; font-weight: bold; }
-        .subject { padding-left: 20px; margin: 8px 0; border-left: 3px solid #3b82f6; }
-        .topic { padding-left: 20px; margin: 4px 0; font-size: 14px; }
-        .topic a { color: #3b82f6; text-decoration: none; }
-        .topic a:hover { text-decoration: underline; }
-        .loading, .error, .no-results { text-align: center; padding: 40px; color: #666; }
+        h1 { margin-bottom: 20px; }
+        .batch { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .batch h2 { display: inline; }
+        .batch .meta { color: #666; font-size: 14px; margin-left: 10px; }
+        .batch .expand { float: right; }
+        .subject { padding-left: 30px; margin: 10px 0; border-left: 3px solid #3b82f6; }
+        .subject h3 { cursor: pointer; color: #1a1a2e; }
+        .lecture { padding-left: 20px; margin: 5px 0; font-size: 14px; }
+        .lecture a { color: #2563eb; text-decoration: none; margin-left: 10px; }
+        .lecture a:hover { text-decoration: underline; }
+        .loading { text-align: center; padding: 20px; color: #666; }
         .error { color: #ef4444; }
-        .footer { text-align: center; margin-top: 30px; padding: 20px; color: #999; font-size: 14px; }
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .batch { padding: 15px; }
-            .stat { padding: 8px 16px; }
-        }
+        .footer { text-align: center; margin-top: 30px; color: #999; font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>
-            📚 Study Batches
-            <span class="badge" id="countBadge">Loading...</span>
-        </h1>
-        
-        <div class="stats">
-            <div class="stat"><strong id="totalBatches">-</strong><span>Total Batches</span></div>
-            <div class="stat"><strong id="freeBatches">-</strong><span>Free Batches</span></div>
-            <div class="stat"><strong id="paidBatches">-</strong><span>Paid Batches</span></div>
-        </div>
-        
-        <input type="text" class="search" id="searchInput" placeholder="Search by name, exam, or description...">
+        <h1>📚 My Study Portal</h1>
         <div id="batchList"><div class="loading">Loading batches...</div></div>
-        <div class="footer">Data updated automatically every 2 hours</div>
+        <div class="footer">Data from batches.json • Watch links open pwthor.live</div>
     </div>
 
     <script>
-        const DATA_URL = 'https://raw.githubusercontent.com/nobodyknows23/batches/main/batches.json';
+        // ============================================================
+        // 1. CONFIGURE YOUR AUTH TOKEN (get it from your browser cookies)
+        // ============================================================
+        const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2JpbGUiOiI2MDA2OTE1OTMzIiwibmFtZSI6IldhcmlzIiwiaWF0IjoxNzc5NjEyMzE4LCJleHAiOjE3ODczODgzMTh9.ZzSV4768j7-YSNRETRZLJ_-ZExi_XnmyicIxTMKZksM'; // <-- PASTE YOUR TOKEN
+
+        // ============================================================
+        // 2. LOAD BATCHES FROM YOUR JSON FILE
+        // ============================================================
+        const BATCHES_URL = 'https://raw.githubusercontent.com/nobodyknows23/batches/main/batches.json';
+        // If you use Vercel, you can also use your deployed URL:
+        // const BATCHES_URL = 'https://batches-seven.vercel.app/batches.json';
+
         let allBatches = [];
 
-        async function loadData() {
+        async function loadBatches() {
             try {
-                const response = await fetch(DATA_URL);
+                const response = await fetch(BATCHES_URL);
                 const data = await response.json();
                 allBatches = data.data || data || [];
-                updateStats();
                 renderBatches(allBatches);
             } catch (error) {
-                document.getElementById('batchList').innerHTML = 
-                    '<div class="error">❌ Failed to load batches. Please refresh.</div>';
-                console.error('Error:', error);
+                document.getElementById('batchList').innerHTML = '<div class="error">❌ Failed to load batches. Please refresh.</div>';
+                console.error(error);
             }
         }
 
-        function updateStats() {
-            const total = allBatches.length;
-            const free = allBatches.filter(b => parseInt(b.amount) === 0).length;
-            const paid = total - free;
-            
-            document.getElementById('totalBatches').textContent = total;
-            document.getElementById('freeBatches').textContent = free;
-            document.getElementById('paidBatches').textContent = paid;
-            document.getElementById('countBadge').textContent = `${total} batches`;
-        }
-
+        // ============================================================
+        // 3. RENDER BATCHES (click to expand subjects)
+        // ============================================================
         function renderBatches(batches) {
             const container = document.getElementById('batchList');
-            
             if (!batches || batches.length === 0) {
-                container.innerHTML = '<div class="no-results">No batches match your search.</div>';
+                container.innerHTML = '<div class="error">No batches found.</div>';
                 return;
             }
-
             let html = '';
             batches.forEach(batch => {
                 const price = parseInt(batch.amount) || 0;
-                const priceLabel = price === 0 ? 
-                    '<span class="price-free">FREE</span>' : 
-                    `<span class="price-paid">₹${price}</span>`;
-                
+                const priceLabel = price === 0 ? 'FREE' : `₹${price}`;
                 const exam = batch.exam ? (Array.isArray(batch.exam) ? batch.exam.join(', ') : batch.exam) : 'N/A';
-                const subjects = batch.subjects || [];
-                
                 html += `
-                    <div class="batch">
-                        <h2>${batch.name} ${priceLabel}</h2>
-                        <div class="meta">${batch.byName || ''} | Exam: ${exam} | Language: ${batch.language || 'N/A'}</div>
-                        ${subjects.length > 0 ? subjects.map(subject => `
-                            <div class="subject">
-                                <strong>${subject.name}</strong>
-                                ${subject.topics ? subject.topics.map(topic => `
-                                    <div class="topic">
-                                        ${topic.name}
-                                        ${topic.video_url ? ` <a href="${topic.video_url}" target="_blank">▶ Watch</a>` : ''}
-                                    </div>
-                                `).join('') : ''}
-                            </div>
-                        `).join('') : '<div style="color:#999;font-size:14px;padding-left:20px;">No topics available</div>'}
+                    <div class="batch" data-batchid="${batch.batch_id}" data-batchname="${batch.name}">
+                        <h2>${batch.name}</h2>
+                        <span class="meta">${exam} | ${batch.language || 'N/A'} | ${priceLabel}</span>
+                        <span class="expand">▼</span>
+                        <div class="subjects-container" style="display:none; margin-top:10px;">
+                            <div class="loading">Loading subjects...</div>
+                        </div>
                     </div>
                 `;
             });
-            
+            container.innerHTML = html;
+
+            // Attach click events to expand/collapse batches
+            document.querySelectorAll('.batch').forEach(batchDiv => {
+                batchDiv.addEventListener('click', function(e) {
+                    const container = this.querySelector('.subjects-container');
+                    const expand = this.querySelector('.expand');
+                    if (container.style.display === 'none') {
+                        container.style.display = 'block';
+                        expand.textContent = '▲';
+                        // Load subjects if not already loaded
+                        if (container.dataset.loaded !== 'true') {
+                            const batchId = this.dataset.batchid;
+                            const batchName = this.dataset.batchname;
+                            loadSubjects(batchId, container);
+                            container.dataset.loaded = 'true';
+                        }
+                    } else {
+                        container.style.display = 'none';
+                        expand.textContent = '▼';
+                    }
+                });
+            });
+        }
+
+        // ============================================================
+        // 4. FETCH SUBJECTS FOR A BATCH (using /api/SubjectInfo)
+        // ============================================================
+        async function loadSubjects(batchId, container) {
+            try {
+                // First try to get subjects from todays-schedule API
+                const scheduleRes = await fetch('https://pwthor.live/api/todays-schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cookie': `auth_token=${AUTH_TOKEN}`,
+                        'Referer': 'https://pwthor.live/'
+                    },
+                    body: JSON.stringify({ batchId: batchId })
+                });
+                if (!scheduleRes.ok) throw new Error('Schedule API failed');
+                const scheduleData = await scheduleRes.json();
+                // Extract subjects from schedule (the response structure may vary, adjust)
+                const subjects = scheduleData.data?.subjects || scheduleData.subjects || [];
+                if (subjects.length === 0) {
+                    container.innerHTML = '<div class="error">No subjects found for this batch.</div>';
+                    return;
+                }
+                renderSubjects(subjects, container, batchId);
+            } catch (error) {
+                // Fallback: try to get from SubjectInfo (but need subject IDs)
+                container.innerHTML = `<div class="error">Could not load subjects: ${error.message}</div>`;
+                console.error(error);
+            }
+        }
+
+        // ============================================================
+        // 5. RENDER SUBJECTS (click to expand topics/lectures)
+        // ============================================================
+        function renderSubjects(subjects, container, batchId) {
+            let html = '';
+            subjects.forEach(subject => {
+                const subjectId = subject.subjectId || subject._id || subject.id;
+                const subjectName = subject.name || subject.subject || 'Unnamed';
+                html += `
+                    <div class="subject" data-subjectid="${subjectId}">
+                        <h3>${subjectName} <span style="font-size:12px;color:#999;">(click to load lectures)</span></h3>
+                        <div class="lectures-container" style="display:none; margin-top:5px;">
+                            <div class="loading">Loading lectures...</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+
+            // Attach click events to expand subjects
+            container.querySelectorAll('.subject').forEach(subjectDiv => {
+                subjectDiv.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const lecContainer = this.querySelector('.lectures-container');
+                    if (lecContainer.style.display === 'none') {
+                        lecContainer.style.display = 'block';
+                        if (lecContainer.dataset.loaded !== 'true') {
+                            const subjectId = this.dataset.subjectid;
+                            loadLectures(batchId, subjectId, lecContainer);
+                            lecContainer.dataset.loaded = 'true';
+                        }
+                    } else {
+                        lecContainer.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // ============================================================
+        // 6. FETCH LECTURES FOR A SUBJECT (using /api/TopicInfo)
+        // ============================================================
+        async function loadLectures(batchId, subjectId, container) {
+            try {
+                // First we need the topicId (slug). We can get it from SubjectInfo.
+                // For simplicity, we'll try to get topics via SubjectInfo with the subjectId.
+                const subInfoUrl = `https://pwthor.live/api/SubjectInfo?BatchId=${batchId}&SubjectId=${subjectId}&page=1`;
+                const subInfoRes = await fetch(subInfoUrl, {
+                    headers: {
+                        'Cookie': `auth_token=${AUTH_TOKEN}`,
+                        'Referer': 'https://pwthor.live/'
+                    }
+                });
+                if (!subInfoRes.ok) throw new Error('SubjectInfo failed');
+                const subInfo = await subInfoRes.json();
+                const topics = subInfo.data || subInfo.topics || [];
+                if (topics.length === 0) {
+                    container.innerHTML = '<div class="error">No topics found for this subject.</div>';
+                    return;
+                }
+                // For each topic, fetch its lectures
+                let allLectures = [];
+                for (const topic of topics) {
+                    const topicId = topic.tagId || topic._id || topic.id;
+                    const topicName = topic.name || 'Unnamed';
+                    const lecUrl = `https://pwthor.live/api/TopicInfo?BatchId=${batchId}&SubjectId=${subjectId}&TopicId=${topicId}&ContentType=videos&page=1`;
+                    const lecRes = await fetch(lecUrl, {
+                        headers: {
+                            'Cookie': `auth_token=${AUTH_TOKEN}`,
+                            'Referer': 'https://pwthor.live/'
+                        }
+                    });
+                    if (lecRes.ok) {
+                        const lecData = await lecRes.json();
+                        const lectures = lecData.data || lecData.lectures || [];
+                        lectures.forEach(lec => {
+                            allLectures.push({
+                                topicName: topicName,
+                                childId: lec._id || lec.ChildId,
+                                name: lec.name || lec.topic || 'Lecture',
+                                isLocked: lec.isLocked !== undefined ? lec.isLocked : false
+                            });
+                        });
+                    }
+                }
+                if (allLectures.length === 0) {
+                    container.innerHTML = '<div class="error">No lectures found.</div>';
+                    return;
+                }
+                renderLectures(allLectures, container, batchId, subjectId);
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error loading lectures: ${error.message}</div>`;
+                console.error(error);
+            }
+        }
+
+        // ============================================================
+        // 7. RENDER LECTURES WITH WATCH LINKS
+        // ============================================================
+        function renderLectures(lectures, container, batchId, subjectId) {
+            let html = '';
+            lectures.forEach(lec => {
+                const watchUrl = `https://pwthor.live/watch?batchId=${batchId}&SubjectId=${subjectId}&ChildId=${lec.childId}&Type=penpencilvdo&VideoUrl=&isLocked=${lec.isLocked}`;
+                html += `
+                    <div class="lecture">
+                        <span>${lec.topicName ? '['+lec.topicName+'] ' : ''}${lec.name}</span>
+                        <a href="${watchUrl}" target="_blank">▶ Watch</a>
+                        ${lec.isLocked ? '🔒' : ''}
+                    </div>
+                `;
+            });
             container.innerHTML = html;
         }
 
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase();
-            const filtered = allBatches.filter(batch => 
-                batch.name.toLowerCase().includes(query) ||
-                (batch.byName && batch.byName.toLowerCase().includes(query)) ||
-                (batch.exam && (Array.isArray(batch.exam) ? batch.exam.join(' ').toLowerCase() : batch.exam.toLowerCase()).includes(query))
-            );
-            renderBatches(filtered);
-        });
-
-        loadData();
+        // ============================================================
+        // 8. START
+        // ============================================================
+        loadBatches();
     </script>
 </body>
 </html>
