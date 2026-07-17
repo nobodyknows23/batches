@@ -32,7 +32,7 @@
 
     <script>
         // ============================================================
-        // 1. CONFIGURE YOUR AUTH TOKEN (get it from your browser cookies)
+        // 1. YOUR AUTH TOKEN (get from browser cookies)
         // ============================================================
         const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2JpbGUiOiI2MDA2OTE1OTMzIiwibmFtZSI6IldhcmlzIiwiaWF0IjoxNzc5NjEyMzE4LCJleHAiOjE3ODczODgzMTh9.ZzSV4768j7-YSNRETRZLJ_-ZExi_XnmyicIxTMKZksM'; // <-- PASTE YOUR TOKEN
 
@@ -40,8 +40,6 @@
         // 2. LOAD BATCHES FROM YOUR JSON FILE
         // ============================================================
         const BATCHES_URL = 'https://raw.githubusercontent.com/nobodyknows23/batches/main/batches.json';
-        // If you use Vercel, you can also use your deployed URL:
-        // const BATCHES_URL = 'https://batches-seven.vercel.app/batches.json';
 
         let allBatches = [];
 
@@ -58,7 +56,7 @@
         }
 
         // ============================================================
-        // 3. RENDER BATCHES (click to expand subjects)
+        // 3. RENDER BATCHES (click to expand)
         // ============================================================
         function renderBatches(batches) {
             const container = document.getElementById('batchList');
@@ -84,7 +82,7 @@
             });
             container.innerHTML = html;
 
-            // Attach click events to expand/collapse batches
+            // Click to expand/collapse
             document.querySelectorAll('.batch').forEach(batchDiv => {
                 batchDiv.addEventListener('click', function(e) {
                     const container = this.querySelector('.subjects-container');
@@ -92,10 +90,8 @@
                     if (container.style.display === 'none') {
                         container.style.display = 'block';
                         expand.textContent = '▲';
-                        // Load subjects if not already loaded
                         if (container.dataset.loaded !== 'true') {
                             const batchId = this.dataset.batchid;
-                            const batchName = this.dataset.batchname;
                             loadSubjects(batchId, container);
                             container.dataset.loaded = 'true';
                         }
@@ -108,44 +104,41 @@
         }
 
         // ============================================================
-        // 4. FETCH SUBJECTS FOR A BATCH (using /api/SubjectInfo)
+        // 4. FETCH SUBJECTS USING /api/BatchInfo
         // ============================================================
         async function loadSubjects(batchId, container) {
             try {
-                // First try to get subjects from todays-schedule API
-                const scheduleRes = await fetch('https://pwthor.live/api/todays-schedule', {
-                    method: 'POST',
+                const url = `https://pwthor.live/api/BatchInfo?BatchId=${batchId}&Type=details`;
+                const response = await fetch(url, {
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Cookie': `auth_token=${AUTH_TOKEN}`,
+                        'Authorization': `Bearer ${AUTH_TOKEN}`,
                         'Referer': 'https://pwthor.live/'
-                    },
-                    body: JSON.stringify({ batchId: batchId })
+                    }
                 });
-                if (!scheduleRes.ok) throw new Error('Schedule API failed');
-                const scheduleData = await scheduleRes.json();
-                // Extract subjects from schedule (the response structure may vary, adjust)
-                const subjects = scheduleData.data?.subjects || scheduleData.subjects || [];
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+                }
+                const data = await response.json();
+                const subjects = data.data?.subjects || [];
                 if (subjects.length === 0) {
                     container.innerHTML = '<div class="error">No subjects found for this batch.</div>';
                     return;
                 }
                 renderSubjects(subjects, container, batchId);
             } catch (error) {
-                // Fallback: try to get from SubjectInfo (but need subject IDs)
-                container.innerHTML = `<div class="error">Could not load subjects: ${error.message}</div>`;
+                container.innerHTML = `<div class="error">Error loading subjects: ${error.message}</div>`;
                 console.error(error);
             }
         }
 
         // ============================================================
-        // 5. RENDER SUBJECTS (click to expand topics/lectures)
+        // 5. RENDER SUBJECTS
         // ============================================================
         function renderSubjects(subjects, container, batchId) {
             let html = '';
             subjects.forEach(subject => {
                 const subjectId = subject.subjectId || subject._id || subject.id;
-                const subjectName = subject.name || subject.subject || 'Unnamed';
+                const subjectName = subject.subject || subject.name || 'Unnamed';
                 html += `
                     <div class="subject" data-subjectid="${subjectId}">
                         <h3>${subjectName} <span style="font-size:12px;color:#999;">(click to load lectures)</span></h3>
@@ -157,7 +150,6 @@
             });
             container.innerHTML = html;
 
-            // Attach click events to expand subjects
             container.querySelectorAll('.subject').forEach(subjectDiv => {
                 subjectDiv.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -177,27 +169,27 @@
         }
 
         // ============================================================
-        // 6. FETCH LECTURES FOR A SUBJECT (using /api/TopicInfo)
+        // 6. FETCH LECTURES (TOPICS) USING /api/TopicInfo
         // ============================================================
         async function loadLectures(batchId, subjectId, container) {
             try {
-                // First we need the topicId (slug). We can get it from SubjectInfo.
-                // For simplicity, we'll try to get topics via SubjectInfo with the subjectId.
+                // Step A: Get topics from SubjectInfo
                 const subInfoUrl = `https://pwthor.live/api/SubjectInfo?BatchId=${batchId}&SubjectId=${subjectId}&page=1`;
                 const subInfoRes = await fetch(subInfoUrl, {
                     headers: {
-                        'Cookie': `auth_token=${AUTH_TOKEN}`,
+                        'Authorization': `Bearer ${AUTH_TOKEN}`,
                         'Referer': 'https://pwthor.live/'
                     }
                 });
-                if (!subInfoRes.ok) throw new Error('SubjectInfo failed');
+                if (!subInfoRes.ok) throw new Error(`SubjectInfo failed: ${subInfoRes.status}`);
                 const subInfo = await subInfoRes.json();
                 const topics = subInfo.data || subInfo.topics || [];
                 if (topics.length === 0) {
                     container.innerHTML = '<div class="error">No topics found for this subject.</div>';
                     return;
                 }
-                // For each topic, fetch its lectures
+
+                // Step B: For each topic, fetch lectures
                 let allLectures = [];
                 for (const topic of topics) {
                     const topicId = topic.tagId || topic._id || topic.id;
@@ -205,7 +197,7 @@
                     const lecUrl = `https://pwthor.live/api/TopicInfo?BatchId=${batchId}&SubjectId=${subjectId}&TopicId=${topicId}&ContentType=videos&page=1`;
                     const lecRes = await fetch(lecUrl, {
                         headers: {
-                            'Cookie': `auth_token=${AUTH_TOKEN}`,
+                            'Authorization': `Bearer ${AUTH_TOKEN}`,
                             'Referer': 'https://pwthor.live/'
                         }
                     });
