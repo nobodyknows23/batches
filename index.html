@@ -1,80 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Study Portal</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📚 Study Portal</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; background: #f0f2f5; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { margin-bottom: 20px; }
-        .batch { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .batch h2 { display: inline; }
-        .batch .meta { color: #666; font-size: 14px; margin-left: 10px; }
-        .batch .expand { float: right; }
-        .subject { padding-left: 30px; margin: 10px 0; border-left: 3px solid #3b82f6; }
-        .subject h3 { cursor: pointer; color: #1a1a2e; }
-        .lecture { padding-left: 20px; margin: 5px 0; font-size: 14px; }
-        .lecture a { color: #2563eb; text-decoration: none; margin-left: 10px; }
-        .lecture a:hover { text-decoration: underline; }
-        .loading { text-align: center; padding: 20px; color: #666; }
-        .error { color: #ef4444; }
-        .footer { text-align: center; margin-top: 30px; color: #999; font-size: 14px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f3f4f6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .badge {
+            font-size: 14px;
+            background: #2563eb;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .search {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        .search:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+        .batch {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .batch:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .batch h2 {
+            font-size: 18px;
+            display: inline;
+        }
+        .batch .meta {
+            color: #6b7280;
+            font-size: 13px;
+            margin-left: 12px;
+        }
+        .batch .price-free {
+            color: #22c55e;
+            font-weight: 600;
+        }
+        .batch .price-paid {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        .batch .expand {
+            float: right;
+            font-size: 18px;
+            color: #6b7280;
+        }
+        .subjects-container {
+            margin-top: 14px;
+            padding-left: 8px;
+            display: none;
+        }
+        .subject {
+            border-left: 3px solid #2563eb;
+            padding-left: 16px;
+            margin: 10px 0;
+        }
+        .subject h3 {
+            font-size: 16px;
+            color: #1f2937;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .subject h3 .count {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: normal;
+        }
+        .lectures-container {
+            margin-top: 6px;
+            padding-left: 8px;
+            display: none;
+        }
+        .lecture {
+            background: #f9fafb;
+            padding: 10px 14px;
+            margin: 4px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .lecture .name {
+            font-size: 14px;
+            flex: 1;
+            min-width: 150px;
+        }
+        .lecture .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .lecture .actions a {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .btn-watch {
+            background: #2563eb;
+            color: white;
+        }
+        .btn-watch:hover {
+            background: #1d4ed8;
+        }
+        .btn-notes {
+            background: #10b981;
+            color: white;
+        }
+        .btn-notes:hover {
+            background: #059669;
+        }
+        .btn-dpp {
+            background: #f59e0b;
+            color: white;
+        }
+        .btn-dpp:hover {
+            background: #d97706;
+        }
+        .btn-locked {
+            background: #9ca3af;
+            color: white;
+            cursor: default;
+        }
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #6b7280;
+        }
+        .error {
+            color: #ef4444;
+            padding: 10px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .lecture {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .lecture .actions {
+                justify-content: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>📚 My Study Portal</h1>
+        <h1>
+            📚 Study Portal
+            <span class="badge" id="batchCount">Loading...</span>
+        </h1>
+
+        <input type="text" class="search" id="searchInput" placeholder="Search batches by name, exam, or description..." />
+
         <div id="batchList"><div class="loading">Loading batches...</div></div>
-        <div class="footer">Data from batches.json • Watch links open pwthor.live</div>
+
+        <div class="footer">Data updates automatically • Click batch → subject → lecture</div>
     </div>
 
     <script>
         // ============================================================
-        // 1. YOUR AUTH TOKEN (get from browser cookies)
+        // 🔑 YOUR AUTH TOKEN (get from browser cookies on pwthor.live)
         // ============================================================
         const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2JpbGUiOiI2MDA2OTE1OTMzIiwibmFtZSI6IldhcmlzIiwiaWF0IjoxNzc5NjEyMzE4LCJleHAiOjE3ODczODgzMTh9.ZzSV4768j7-YSNRETRZLJ_-ZExi_XnmyicIxTMKZksM'; // <-- PASTE YOUR TOKEN
 
         // ============================================================
-        // 2. LOAD BATCHES FROM YOUR JSON FILE
+        // 📦 BATCHES DATA SOURCE
         // ============================================================
         const BATCHES_URL = 'https://raw.githubusercontent.com/nobodyknows23/batches/main/batches.json';
 
+        // ============================================================
+        // 🧠 STATE
+        // ============================================================
         let allBatches = [];
+        let filteredBatches = [];
 
+        // ============================================================
+        // 📥 LOAD BATCHES
+        // ============================================================
         async function loadBatches() {
             try {
-                const response = await fetch(BATCHES_URL);
-                const data = await response.json();
+                const res = await fetch(BATCHES_URL);
+                const data = await res.json();
                 allBatches = data.data || data || [];
-                renderBatches(allBatches);
-            } catch (error) {
-                document.getElementById('batchList').innerHTML = '<div class="error">❌ Failed to load batches. Please refresh.</div>';
-                console.error(error);
+                filteredBatches = [...allBatches];
+                document.getElementById('batchCount').textContent = `${allBatches.length} batches`;
+                renderBatches(filteredBatches);
+            } catch (err) {
+                document.getElementById('batchList').innerHTML =
+                    `<div class="error">❌ Failed to load batches. ${err.message}</div>`;
             }
         }
 
         // ============================================================
-        // 3. RENDER BATCHES (click to expand)
+        // 🖼️ RENDER BATCHES
         // ============================================================
         function renderBatches(batches) {
             const container = document.getElementById('batchList');
             if (!batches || batches.length === 0) {
-                container.innerHTML = '<div class="error">No batches found.</div>';
+                container.innerHTML = '<div class="loading">No batches match your search.</div>';
                 return;
             }
+
             let html = '';
-            batches.forEach(batch => {
-                const price = parseInt(batch.amount) || 0;
-                const priceLabel = price === 0 ? 'FREE' : `₹${price}`;
-                const exam = batch.exam ? (Array.isArray(batch.exam) ? batch.exam.join(', ') : batch.exam) : 'N/A';
+            batches.forEach(b => {
+                const price = parseInt(b.amount) || 0;
+                const priceLabel = price === 0 ?
+                    '<span class="price-free">FREE</span>' :
+                    `<span class="price-paid">₹${price}</span>`;
+                const exam = b.exam ? (Array.isArray(b.exam) ? b.exam.join(', ') : b.exam) : 'N/A';
+
                 html += `
-                    <div class="batch" data-batchid="${batch.batch_id}" data-batchname="${batch.name}">
-                        <h2>${batch.name}</h2>
-                        <span class="meta">${exam} | ${batch.language || 'N/A'} | ${priceLabel}</span>
+                    <div class="batch" data-batchid="${b.batch_id}">
+                        <h2>${b.name}</h2>
+                        <span class="meta">${exam} · ${b.language || 'N/A'} · ${priceLabel}</span>
                         <span class="expand">▼</span>
-                        <div class="subjects-container" style="display:none; margin-top:10px;">
+                        <div class="subjects-container" data-loaded="false">
                             <div class="loading">Loading subjects...</div>
                         </div>
                     </div>
@@ -82,15 +272,15 @@
             });
             container.innerHTML = html;
 
-            // Click to expand/collapse
-            document.querySelectorAll('.batch').forEach(batchDiv => {
-                batchDiv.addEventListener('click', function(e) {
+            // Attach click events
+            document.querySelectorAll('.batch').forEach(el => {
+                el.addEventListener('click', function(e) {
                     const container = this.querySelector('.subjects-container');
                     const expand = this.querySelector('.expand');
-                    if (container.style.display === 'none') {
+                    if (container.style.display === 'none' || container.style.display === '') {
                         container.style.display = 'block';
                         expand.textContent = '▲';
-                        if (container.dataset.loaded !== 'true') {
+                        if (container.dataset.loaded === 'false') {
                             const batchId = this.dataset.batchid;
                             loadSubjects(batchId, container);
                             container.dataset.loaded = 'true';
@@ -104,97 +294,96 @@
         }
 
         // ============================================================
-        // 4. FETCH SUBJECTS USING /api/BatchInfo
+        // 📚 LOAD SUBJECTS FOR A BATCH
         // ============================================================
         async function loadSubjects(batchId, container) {
             try {
                 const url = `https://pwthor.live/api/BatchInfo?BatchId=${batchId}&Type=details`;
-                const response = await fetch(url, {
+                const res = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${AUTH_TOKEN}`,
                         'Referer': 'https://pwthor.live/'
                     }
                 });
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-                }
-                const data = await response.json();
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
                 const subjects = data.data?.subjects || [];
+
                 if (subjects.length === 0) {
-                    container.innerHTML = '<div class="error">No subjects found for this batch.</div>';
+                    container.innerHTML = '<div class="error">No subjects found.</div>';
                     return;
                 }
-                renderSubjects(subjects, container, batchId);
-            } catch (error) {
-                container.innerHTML = `<div class="error">Error loading subjects: ${error.message}</div>`;
-                console.error(error);
+
+                let html = '';
+                subjects.forEach(sub => {
+                    const subjectId = sub.subjectId || sub._id || sub.id;
+                    const name = sub.subject || sub.name || 'Unnamed';
+                    html += `
+                        <div class="subject" data-subjectid="${subjectId}" data-batchid="${batchId}">
+                            <h3>${name} <span class="count">(click to load lectures)</span></h3>
+                            <div class="lectures-container" data-loaded="false">
+                                <div class="loading">Loading lectures...</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+
+                // Attach click events for subjects
+                container.querySelectorAll('.subject').forEach(el => {
+                    el.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const lecContainer = this.querySelector('.lectures-container');
+                        if (lecContainer.style.display === 'none' || lecContainer.style.display === '') {
+                            lecContainer.style.display = 'block';
+                            if (lecContainer.dataset.loaded === 'false') {
+                                const batchId = this.dataset.batchid;
+                                const subjectId = this.dataset.subjectid;
+                                loadLectures(batchId, subjectId, lecContainer);
+                                lecContainer.dataset.loaded = 'true';
+                            }
+                        } else {
+                            lecContainer.style.display = 'none';
+                        }
+                    });
+                });
+
+            } catch (err) {
+                container.innerHTML = `<div class="error">Error loading subjects: ${err.message}</div>`;
             }
         }
 
         // ============================================================
-        // 5. RENDER SUBJECTS
-        // ============================================================
-        function renderSubjects(subjects, container, batchId) {
-            let html = '';
-            subjects.forEach(subject => {
-                const subjectId = subject.subjectId || subject._id || subject.id;
-                const subjectName = subject.subject || subject.name || 'Unnamed';
-                html += `
-                    <div class="subject" data-subjectid="${subjectId}">
-                        <h3>${subjectName} <span style="font-size:12px;color:#999;">(click to load lectures)</span></h3>
-                        <div class="lectures-container" style="display:none; margin-top:5px;">
-                            <div class="loading">Loading lectures...</div>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-
-            container.querySelectorAll('.subject').forEach(subjectDiv => {
-                subjectDiv.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const lecContainer = this.querySelector('.lectures-container');
-                    if (lecContainer.style.display === 'none') {
-                        lecContainer.style.display = 'block';
-                        if (lecContainer.dataset.loaded !== 'true') {
-                            const subjectId = this.dataset.subjectid;
-                            loadLectures(batchId, subjectId, lecContainer);
-                            lecContainer.dataset.loaded = 'true';
-                        }
-                    } else {
-                        lecContainer.style.display = 'none';
-                    }
-                });
-            });
-        }
-
-        // ============================================================
-        // 6. FETCH LECTURES (TOPICS) USING /api/TopicInfo
+        // 🎬 LOAD LECTURES FOR A SUBJECT
         // ============================================================
         async function loadLectures(batchId, subjectId, container) {
             try {
-                // Step A: Get topics from SubjectInfo
-                const subInfoUrl = `https://pwthor.live/api/SubjectInfo?BatchId=${batchId}&SubjectId=${subjectId}&page=1`;
-                const subInfoRes = await fetch(subInfoUrl, {
+                // 1. Get topics
+                const topUrl =
+                    `https://pwthor.live/api/SubjectInfo?BatchId=${batchId}&SubjectId=${subjectId}&page=1`;
+                const topRes = await fetch(topUrl, {
                     headers: {
                         'Authorization': `Bearer ${AUTH_TOKEN}`,
                         'Referer': 'https://pwthor.live/'
                     }
                 });
-                if (!subInfoRes.ok) throw new Error(`SubjectInfo failed: ${subInfoRes.status}`);
-                const subInfo = await subInfoRes.json();
-                const topics = subInfo.data || subInfo.topics || [];
+                if (!topRes.ok) throw new Error(`SubjectInfo failed: ${topRes.status}`);
+                const topData = await topRes.json();
+                const topics = topData.data || [];
+
                 if (topics.length === 0) {
-                    container.innerHTML = '<div class="error">No topics found for this subject.</div>';
+                    container.innerHTML = '<div class="error">No topics found.</div>';
                     return;
                 }
 
-                // Step B: For each topic, fetch lectures
+                // 2. For each topic, fetch lectures
                 let allLectures = [];
                 for (const topic of topics) {
-                    const topicId = topic.tagId || topic._id || topic.id;
+                    const topicId = topic._id || topic.tagId || topic.slug;
                     const topicName = topic.name || 'Unnamed';
-                    const lecUrl = `https://pwthor.live/api/TopicInfo?BatchId=${batchId}&SubjectId=${subjectId}&TopicId=${topicId}&ContentType=videos&page=1`;
+
+                    const lecUrl =
+                        `https://pwthor.live/api/TopicInfo?BatchId=${batchId}&SubjectId=${subjectId}&TopicId=${topicId}&ContentType=videos&page=1`;
                     const lecRes = await fetch(lecUrl, {
                         headers: {
                             'Authorization': `Bearer ${AUTH_TOKEN}`,
@@ -203,40 +392,56 @@
                     });
                     if (lecRes.ok) {
                         const lecData = await lecRes.json();
-                        const lectures = lecData.data || lecData.lectures || [];
+                        const lectures = lecData.data || [];
                         lectures.forEach(lec => {
                             allLectures.push({
                                 topicName: topicName,
                                 childId: lec._id || lec.ChildId,
-                                name: lec.name || lec.topic || 'Lecture',
-                                isLocked: lec.isLocked !== undefined ? lec.isLocked : false
+                                name: lec.topic || lec.name || 'Lecture',
+                                isLocked: lec.isLocked !== undefined ? lec.isLocked : false,
+                                notes: lec.notes || null, // placeholder
+                                dpp: lec.dpp || null // placeholder
                             });
                         });
                     }
                 }
+
                 if (allLectures.length === 0) {
                     container.innerHTML = '<div class="error">No lectures found.</div>';
                     return;
                 }
+
                 renderLectures(allLectures, container, batchId, subjectId);
-            } catch (error) {
-                container.innerHTML = `<div class="error">Error loading lectures: ${error.message}</div>`;
-                console.error(error);
+
+            } catch (err) {
+                container.innerHTML = `<div class="error">Error loading lectures: ${err.message}</div>`;
             }
         }
 
         // ============================================================
-        // 7. RENDER LECTURES WITH WATCH LINKS
+        // 🖼️ RENDER LECTURES WITH WATCH / NOTES / DPP BUTTONS
         // ============================================================
         function renderLectures(lectures, container, batchId, subjectId) {
             let html = '';
             lectures.forEach(lec => {
-                const watchUrl = `https://pwthor.live/watch?batchId=${batchId}&SubjectId=${subjectId}&ChildId=${lec.childId}&Type=penpencilvdo&VideoUrl=&isLocked=${lec.isLocked}`;
+                const watchUrl =
+                    `https://pwthor.live/watch?batchId=${batchId}&SubjectId=${subjectId}&ChildId=${lec.childId}&Type=penpencilvdo&VideoUrl=&isLocked=${lec.isLocked}`;
+
+                // Notes & DPP – placeholder links (if available in API response)
+                const notesUrl = lec.notes ? lec.notes : null;
+                const dppUrl = lec.dpp ? lec.dpp : null;
+
                 html += `
                     <div class="lecture">
-                        <span>${lec.topicName ? '['+lec.topicName+'] ' : ''}${lec.name}</span>
-                        <a href="${watchUrl}" target="_blank">▶ Watch</a>
-                        ${lec.isLocked ? '🔒' : ''}
+                        <span class="name">
+                            ${lec.topicName ? '['+lec.topicName+'] ' : ''}${lec.name}
+                            ${lec.isLocked ? '🔒' : ''}
+                        </span>
+                        <div class="actions">
+                            <a href="${watchUrl}" target="_blank" class="btn-watch">▶ Watch</a>
+                            ${notesUrl ? `<a href="${notesUrl}" target="_blank" class="btn-notes">📄 Notes</a>` : ''}
+                            ${dppUrl ? `<a href="${dppUrl}" target="_blank" class="btn-dpp">📝 DPP</a>` : ''}
+                        </div>
                     </div>
                 `;
             });
@@ -244,7 +449,24 @@
         }
 
         // ============================================================
-        // 8. START
+        // 🔍 SEARCH
+        // ============================================================
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const q = this.value.toLowerCase().trim();
+            if (!q) {
+                filteredBatches = [...allBatches];
+            } else {
+                filteredBatches = allBatches.filter(b =>
+                    b.name.toLowerCase().includes(q) ||
+                    (b.byName && b.byName.toLowerCase().includes(q)) ||
+                    (b.exam && (Array.isArray(b.exam) ? b.exam.join(' ').toLowerCase() : b.exam.toLowerCase()).includes(q))
+                );
+            }
+            renderBatches(filteredBatches);
+        });
+
+        // ============================================================
+        // 🚀 START
         // ============================================================
         loadBatches();
     </script>
