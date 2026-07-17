@@ -5,206 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>📚 Study Portal</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: #f3f4f6;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .badge {
-            font-size: 14px;
-            background: #2563eb;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-        }
-        .search {
-            width: 100%;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            border: 2px solid #d1d5db;
-            border-radius: 10px;
-            font-size: 16px;
-        }
-        .search:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-        .batch {
-            background: white;
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .batch:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        .batch h2 {
-            font-size: 18px;
-            display: inline;
-        }
-        .batch .meta {
-            color: #6b7280;
-            font-size: 13px;
-            margin-left: 12px;
-        }
-        .batch .price-free {
-            color: #22c55e;
-            font-weight: 600;
-        }
-        .batch .price-paid {
-            color: #ef4444;
-            font-weight: 600;
-        }
-        .batch .expand {
-            float: right;
-            font-size: 18px;
-            color: #6b7280;
-        }
-        .subjects-container {
-            margin-top: 14px;
-            padding-left: 8px;
-            display: none;
-        }
-        .subject {
-            border-left: 3px solid #2563eb;
-            padding-left: 16px;
-            margin: 10px 0;
-        }
-        .subject h3 {
-            font-size: 16px;
-            color: #1f2937;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .subject h3 .count {
-            font-size: 12px;
-            color: #6b7280;
-            font-weight: normal;
-        }
-        .lectures-container {
-            margin-top: 6px;
-            padding-left: 8px;
-            display: none;
-        }
-        .lecture {
-            background: #f9fafb;
-            padding: 10px 14px;
-            margin: 4px 0;
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .lecture .name {
-            font-size: 14px;
-            flex: 1;
-            min-width: 150px;
-        }
-        .lecture .actions {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .lecture .actions a {
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-        .btn-watch {
-            background: #2563eb;
-            color: white;
-        }
-        .btn-watch:hover {
-            background: #1d4ed8;
-        }
-        .btn-notes {
-            background: #10b981;
-            color: white;
-        }
-        .btn-notes:hover {
-            background: #059669;
-        }
-        .btn-dpp {
-            background: #f59e0b;
-            color: white;
-        }
-        .btn-dpp:hover {
-            background: #d97706;
-        }
-        .btn-locked {
-            background: #9ca3af;
-            color: white;
-            cursor: default;
-        }
-        .loading {
-            text-align: center;
-            padding: 30px;
-            color: #6b7280;
-        }
-        .error {
-            color: #ef4444;
-            padding: 10px;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            color: #9ca3af;
-            font-size: 13px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; background: #f3f4f6; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { font-size: 28px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .badge { font-size: 14px; background: #2563eb; color: white; padding: 4px 12px; border-radius: 20px; }
+        .search { width: 100%; padding: 12px 16px; margin-bottom: 20px; border: 2px solid #d1d5db; border-radius: 10px; font-size: 16px; }
+        .search:focus { outline: none; border-color: #2563eb; }
+        .batch { background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); cursor: pointer; transition: 0.2s; }
+        .batch:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .batch h2 { font-size: 18px; display: inline; }
+        .batch .meta { color: #6b7280; font-size: 13px; margin-left: 12px; }
+        .batch .price-free { color: #22c55e; font-weight: 600; }
+        .batch .price-paid { color: #ef4444; font-weight: 600; }
+        .batch .expand { float: right; font-size: 18px; color: #6b7280; }
+        .subjects-container { margin-top: 14px; padding-left: 8px; display: none; }
+        .subject { border-left: 3px solid #2563eb; padding-left: 16px; margin: 10px 0; }
+        .subject h3 { font-size: 16px; color: #1f2937; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .subject h3 .count { font-size: 12px; color: #6b7280; font-weight: normal; }
+        .lectures-container { margin-top: 6px; padding-left: 8px; display: none; }
+        .lecture { background: #f9fafb; padding: 10px 14px; margin: 4px 0; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .lecture .name { font-size: 14px; flex: 1; min-width: 150px; }
+        .lecture .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .lecture .actions a { padding: 4px 12px; border-radius: 6px; font-size: 13px; text-decoration: none; font-weight: 500; transition: 0.2s; }
+        .btn-watch { background: #2563eb; color: white; }
+        .btn-watch:hover { background: #1d4ed8; }
+        .btn-notes { background: #10b981; color: white; }
+        .btn-notes:hover { background: #059669; }
+        .btn-dpp { background: #f59e0b; color: white; }
+        .btn-dpp:hover { background: #d97706; }
+        .loading { text-align: center; padding: 30px; color: #6b7280; }
+        .error { color: #ef4444; padding: 10px; }
+        .footer { text-align: center; margin-top: 40px; padding: 20px; color: #9ca3af; font-size: 13px; }
         @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-            .lecture {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .lecture .actions {
-                justify-content: flex-start;
-            }
+            body { padding: 10px; }
+            .lecture { flex-direction: column; align-items: stretch; }
+            .lecture .actions { justify-content: flex-start; }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>
-            📚 Study Portal
-            <span class="badge" id="batchCount">Loading...</span>
-        </h1>
-
-        <input type="text" class="search" id="searchInput" placeholder="Search batches by name, exam, or description..." />
-
+        <h1>📚 Study Portal <span class="badge" id="batchCount">Loading...</span></h1>
+        <input type="text" class="search" id="searchInput" placeholder="Search batches..." />
         <div id="batchList"><div class="loading">Loading batches...</div></div>
-
-        <div class="footer">Data updates automatically • Click batch → subject → lecture</div>
+        <div class="footer">Data updates automatically</div>
     </div>
 
     <script>
@@ -212,6 +58,11 @@
         // 🔑 YOUR AUTH TOKEN (get from browser cookies on pwthor.live)
         // ============================================================
         const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2JpbGUiOiI2MDA2OTE1OTMzIiwibmFtZSI6IldhcmlzIiwiaWF0IjoxNzc5NjEyMzE4LCJleHAiOjE3ODczODgzMTh9.ZzSV4768j7-YSNRETRZLJ_-ZExi_XnmyicIxTMKZksM'; // <-- PASTE YOUR TOKEN
+
+        // ============================================================
+        // 🌐 CORS PROXY (bypasses browser security)
+        // ============================================================
+        const PROXY = 'https://corsproxy.io/?';
 
         // ============================================================
         // 📦 BATCHES DATA SOURCE
@@ -223,6 +74,21 @@
         // ============================================================
         let allBatches = [];
         let filteredBatches = [];
+
+        // ============================================================
+        // 🔧 HELPER: fetch with proxy + auth
+        // ============================================================
+        async function apiFetch(url) {
+            const proxyUrl = PROXY + encodeURIComponent(url);
+            const res = await fetch(proxyUrl, {
+                headers: {
+                    'Authorization': `Bearer ${AUTH_TOKEN}`,
+                    'Referer': 'https://pwthor.live/'
+                }
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        }
 
         // ============================================================
         // 📥 LOAD BATCHES
@@ -272,7 +138,6 @@
             });
             container.innerHTML = html;
 
-            // Attach click events
             document.querySelectorAll('.batch').forEach(el => {
                 el.addEventListener('click', function(e) {
                     const container = this.querySelector('.subjects-container');
@@ -294,19 +159,12 @@
         }
 
         // ============================================================
-        // 📚 LOAD SUBJECTS FOR A BATCH
+        // 📚 LOAD SUBJECTS
         // ============================================================
         async function loadSubjects(batchId, container) {
             try {
                 const url = `https://pwthor.live/api/BatchInfo?BatchId=${batchId}&Type=details`;
-                const res = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${AUTH_TOKEN}`,
-                        'Referer': 'https://pwthor.live/'
-                    }
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
+                const data = await apiFetch(url);
                 const subjects = data.data?.subjects || [];
 
                 if (subjects.length === 0) {
@@ -329,7 +187,6 @@
                 });
                 container.innerHTML = html;
 
-                // Attach click events for subjects
                 container.querySelectorAll('.subject').forEach(el => {
                     el.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -354,21 +211,14 @@
         }
 
         // ============================================================
-        // 🎬 LOAD LECTURES FOR A SUBJECT
+        // 🎬 LOAD LECTURES
         // ============================================================
         async function loadLectures(batchId, subjectId, container) {
             try {
                 // 1. Get topics
                 const topUrl =
                     `https://pwthor.live/api/SubjectInfo?BatchId=${batchId}&SubjectId=${subjectId}&page=1`;
-                const topRes = await fetch(topUrl, {
-                    headers: {
-                        'Authorization': `Bearer ${AUTH_TOKEN}`,
-                        'Referer': 'https://pwthor.live/'
-                    }
-                });
-                if (!topRes.ok) throw new Error(`SubjectInfo failed: ${topRes.status}`);
-                const topData = await topRes.json();
+                const topData = await apiFetch(topUrl);
                 const topics = topData.data || [];
 
                 if (topics.length === 0) {
@@ -384,14 +234,8 @@
 
                     const lecUrl =
                         `https://pwthor.live/api/TopicInfo?BatchId=${batchId}&SubjectId=${subjectId}&TopicId=${topicId}&ContentType=videos&page=1`;
-                    const lecRes = await fetch(lecUrl, {
-                        headers: {
-                            'Authorization': `Bearer ${AUTH_TOKEN}`,
-                            'Referer': 'https://pwthor.live/'
-                        }
-                    });
-                    if (lecRes.ok) {
-                        const lecData = await lecRes.json();
+                    try {
+                        const lecData = await apiFetch(lecUrl);
                         const lectures = lecData.data || [];
                         lectures.forEach(lec => {
                             allLectures.push({
@@ -399,10 +243,12 @@
                                 childId: lec._id || lec.ChildId,
                                 name: lec.topic || lec.name || 'Lecture',
                                 isLocked: lec.isLocked !== undefined ? lec.isLocked : false,
-                                notes: lec.notes || null, // placeholder
-                                dpp: lec.dpp || null // placeholder
+                                notes: lec.notes || null,
+                                dpp: lec.dpp || null
                             });
                         });
+                    } catch (e) {
+                        // Skip topics that fail
                     }
                 }
 
@@ -419,17 +265,13 @@
         }
 
         // ============================================================
-        // 🖼️ RENDER LECTURES WITH WATCH / NOTES / DPP BUTTONS
+        // 🖼️ RENDER LECTURES
         // ============================================================
         function renderLectures(lectures, container, batchId, subjectId) {
             let html = '';
             lectures.forEach(lec => {
                 const watchUrl =
                     `https://pwthor.live/watch?batchId=${batchId}&SubjectId=${subjectId}&ChildId=${lec.childId}&Type=penpencilvdo&VideoUrl=&isLocked=${lec.isLocked}`;
-
-                // Notes & DPP – placeholder links (if available in API response)
-                const notesUrl = lec.notes ? lec.notes : null;
-                const dppUrl = lec.dpp ? lec.dpp : null;
 
                 html += `
                     <div class="lecture">
@@ -439,8 +281,8 @@
                         </span>
                         <div class="actions">
                             <a href="${watchUrl}" target="_blank" class="btn-watch">▶ Watch</a>
-                            ${notesUrl ? `<a href="${notesUrl}" target="_blank" class="btn-notes">📄 Notes</a>` : ''}
-                            ${dppUrl ? `<a href="${dppUrl}" target="_blank" class="btn-dpp">📝 DPP</a>` : ''}
+                            ${lec.notes ? `<a href="${lec.notes}" target="_blank" class="btn-notes">📄 Notes</a>` : ''}
+                            ${lec.dpp ? `<a href="${lec.dpp}" target="_blank" class="btn-dpp">📝 DPP</a>` : ''}
                         </div>
                     </div>
                 `;
