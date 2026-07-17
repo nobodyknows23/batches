@@ -6,22 +6,51 @@ const CONFIG = {
     // Your batches.json URL
     BATCHES_URL: 'https://raw.githubusercontent.com/nobodyknows23/batches/main/batches.json',
 
-    // If you have a backend proxy, use it; otherwise, use direct fetch
-    // For CORS issues, use a proxy like corsproxy.io
-    PROXY_URL: '', // e.g., 'https://corsproxy.io/?'
+    // ============================================================
+    // ⚠️ IMPORTANT: Add your auth_token here
+    // Get it from pwthor.live cookies (F12 → Application → Cookies)
+    // ============================================================
+    AUTH_TOKEN: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2JpbGUiOiI2MDA2OTE1OTMzIiwibmFtZSI6IldhcmlzIiwiaWF0IjoxNzc5NjEyMzE4LCJleHAiOjE3ODczODgzMTh9.ZzSV4768j7-YSNRETRZLJ_-ZExi_XnmyicIxTMKZksM',
+
+    // CORS Proxy (use if you don't have your own backend)
+    // Try one of these:
+    // 'https://corsproxy.io/?'
+    // 'https://api.allorigins.win/raw?url='
+    PROXY_URL: 'https://corsproxy.io/?',
 
     // Video proxy (vidcloud.eu.org)
     VIDEO_PROXY: 'https://vidcloud.eu.org/play.php',
 };
 
 // ============================================================
+// API HELPER (with CORS proxy)
+// ============================================================
+async function apiFetch(url) {
+    const fullUrl = CONFIG.PROXY_URL + encodeURIComponent(url);
+    console.log('📡 Fetching:', url);
+
+    const response = await fetch(fullUrl, {
+        headers: {
+            'Authorization': `Bearer ${CONFIG.AUTH_TOKEN}`,
+            'Referer': 'https://pwthor.live/',
+            'Accept': 'application/json',
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`API error: ${response.status} - ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ Response:', data);
+    return data;
+}
+
+// ============================================================
 // STATE
 // ============================================================
 let allBatches = [];
 let filteredBatches = [];
-let currentBatchId = null;
-let shakaPlayer = null;
-let isShakaLoaded = false;
 
 // ============================================================
 // DOM REFS
@@ -30,113 +59,6 @@ const batchListEl = document.getElementById('batchList');
 const searchInput = document.getElementById('searchInput');
 const refreshBtn = document.getElementById('refreshBtn');
 const batchCountEl = document.getElementById('batchCount');
-const videoModal = document.getElementById('videoModal');
-const videoTitle = document.getElementById('videoTitle');
-const closeModalBtn = document.getElementById('closeModal');
-const videoPlayer = document.getElementById('videoPlayer');
-
-// ============================================================
-// SHOW/HIDE MODAL
-// ============================================================
-function openModal(title, videoUrl) {
-    videoTitle.textContent = title || 'Loading...';
-    videoModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-
-    // Load video
-    loadVideo(videoUrl);
-}
-
-function closeModal() {
-    videoModal.classList.remove('active');
-    document.body.style.overflow = '';
-    if (shakaPlayer) {
-        shakaPlayer.destroy();
-        shakaPlayer = null;
-    }
-    videoPlayer.removeAttribute('src');
-    videoPlayer.load();
-}
-
-closeModalBtn.addEventListener('click', closeModal);
-videoModal.addEventListener('click', (e) => {
-    if (e.target === videoModal) closeModal();
-});
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
-});
-
-// ============================================================
-// VIDEO LOADER (Shaka Player)
-// ============================================================
-function loadVideo(videoUrl) {
-    if (!videoUrl) {
-        alert('No video URL provided.');
-        return;
-    }
-
-    // Check if Shaka is loaded
-    if (typeof shaka === 'undefined') {
-        alert('Shaka Player library not loaded. Please refresh.');
-        return;
-    }
-
-    // Destroy existing player
-    if (shakaPlayer) {
-        shakaPlayer.destroy();
-        shakaPlayer = null;
-    }
-
-    // Create new player
-    shakaPlayer = new shaka.Player(videoPlayer);
-
-    // Configure
-    shakaPlayer.configure({
-        streaming: {
-            bufferingGoal: 60,
-            retryParameters: {
-                maxAttempts: 10,
-                timeout: 30000,
-            },
-        },
-        drm: {
-            clearKeys: {},
-        },
-    });
-
-    // Error handling
-    shakaPlayer.addEventListener('error', (event) => {
-        console.error('Shaka Player error:', event.detail);
-        // Try fallback: use video element directly with the URL
-        fallbackPlayVideo(videoUrl);
-    });
-
-    // Load the video
-    shakaPlayer.load(videoUrl).catch((error) => {
-        console.error('Error loading video:', error);
-        fallbackPlayVideo(videoUrl);
-    });
-}
-
-// ============================================================
-// FALLBACK VIDEO PLAYER
-// ============================================================
-function fallbackPlayVideo(videoUrl) {
-    console.log('Using fallback video player for:', videoUrl);
-    videoPlayer.removeAttribute('src');
-    videoPlayer.src = videoUrl;
-    videoPlayer.load();
-    videoPlayer.play().catch((e) => {
-        console.error('Fallback play failed:', e);
-        // If it's a DASH/MPD URL, try to open in new tab as last resort
-        if (videoUrl.includes('.mpd') || videoUrl.includes('master.mpd')) {
-            if (confirm('Video player failed. Open in new tab?')) {
-                window.open(videoUrl, '_blank');
-            }
-        }
-    });
-}
 
 // ============================================================
 // HELPERS
@@ -158,21 +80,10 @@ function getPrice(amount) {
 }
 
 // ============================================================
-// BUILD WATCH URL (using vidcloud.eu.org)
+// BUILD WATCH URL (uses pwthor.live/watch)
 // ============================================================
-function buildWatchUrl(batchId, subjectId, topicId, videoId, videoUrl, videoName, videoImg) {
-    const params = new URLSearchParams({
-        batch_id: batchId,
-        subject_id: subjectId,
-        topic_id: topicId,
-        video_id: videoId,
-        video_url: videoUrl,
-        video_name: videoName || 'Lecture',
-        video_img: videoImg || '',
-        video_type: 'new',
-        play_type: 'Lecture',
-    });
-    return `${CONFIG.VIDEO_PROXY}?${params.toString()}`;
+function buildWatchUrl(batchId, subjectId, childId, isLocked) {
+    return `https://pwthor.live/watch?batchId=${batchId}&SubjectId=${subjectId}&ChildId=${childId}&Type=penpencilvdo&VideoUrl=&isLocked=${isLocked}`;
 }
 
 // ============================================================
@@ -268,21 +179,11 @@ function renderBatches(batches) {
             expandBatch(batchId);
         });
     });
-
-    // Click on card to expand
-    document.querySelectorAll('.batch-card').forEach((card) => {
-        card.addEventListener('click', () => {
-            const batchId = card.dataset.batchid;
-            expandBatch(batchId);
-        });
-    });
 }
 
 // ============================================================
-// EXPAND BATCH (Load Subjects)
+// EXPAND BATCH → Load Subjects using /api/BatchInfo
 // ============================================================
-let expandedBatches = new Set();
-
 async function expandBatch(batchId) {
     const card = document.querySelector(`.batch-card[data-batchid="${batchId}"]`);
     if (!card) return;
@@ -290,7 +191,6 @@ async function expandBatch(batchId) {
     // Check if already expanded
     let subjectsContainer = card.querySelector('.subjects-container');
     if (subjectsContainer) {
-        // Toggle
         subjectsContainer.classList.toggle('open');
         return;
     }
@@ -307,12 +207,12 @@ async function expandBatch(batchId) {
     card.querySelector('.card-body').appendChild(subjectsContainer);
 
     try {
-        // Use the batch ID to fetch subjects (via the PW API)
-        // Since we don't have direct API access, we'll simulate with sample data
-        // In production, you'd call your proxy API here
-        const subjects = await fetchSubjects(batchId);
+        // 1. Get subjects from /api/BatchInfo
+        const url = `https://pwthor.live/api/BatchInfo?BatchId=${batchId}&Type=details`;
+        const data = await apiFetch(url);
 
-        if (!subjects || subjects.length === 0) {
+        const subjects = data.data?.subjects || [];
+        if (subjects.length === 0) {
             subjectsContainer.innerHTML = `
                 <div style="color:var(--text-secondary);padding:12px;text-align:center;">
                     No subjects found for this batch.
@@ -322,99 +222,44 @@ async function expandBatch(batchId) {
         }
 
         let html = '';
-        subjects.forEach((subject) => {
+        for (const subject of subjects) {
+            const subjectId = subject.subjectId || subject._id;
+            const subjectName = subject.subject || subject.name || 'Unnamed';
+
             html += `
-                <div class="subject-item" data-subjectid="${subject.id}" data-batchid="${batchId}">
+                <div class="subject-item" data-subjectid="${subjectId}" data-batchid="${batchId}">
                     <div class="subject-header">
-                        <span class="subject-name">${subject.name}</span>
-                        <span class="subject-count">${subject.topics ? subject.topics.length : 0} topics</span>
+                        <span class="subject-name">${subjectName}</span>
+                        <span class="subject-count">Loading topics...</span>
                     </div>
-                    <div class="topics-container">
-                        ${subject.topics ? subject.topics.map(topic => `
-                            <div class="topic-item" data-topicid="${topic.id}" data-batchid="${batchId}" data-subjectid="${subject.id}">
-                                <div class="topic-header">
-                                    <span class="topic-name">${topic.name}</span>
-                                    <span class="topic-lecture-count">${topic.lectures ? topic.lectures.length : 0} lectures</span>
-                                </div>
-                                <div class="lectures-container">
-                                    ${topic.lectures ? topic.lectures.map(lecture => `
-                                        <div class="lecture-item">
-                                            <span class="lecture-name">${lecture.name}</span>
-                                            <div class="lecture-actions">
-                                                <button class="btn-watch" 
-                                                    data-batchid="${batchId}"
-                                                    data-subjectid="${subject.id}"
-                                                    data-topicid="${topic.id}"
-                                                    data-videoid="${lecture.video_id || lecture.id}"
-                                                    data-videourl="${lecture.video_url || ''}"
-                                                    data-videoname="${lecture.name}">
-                                                    ▶ Watch
-                                                </button>
-                                            </div>
-                                        </div>
-                                    `).join('') : ''}
-                                </div>
-                            </div>
-                        `).join('') : ''}
+                    <div class="topics-container" data-loaded="false">
+                        <div class="loading-spinner" style="padding:10px;">
+                            <div class="spinner" style="width:20px;height:20px;"></div>
+                            <p style="font-size:13px;">Loading topics...</p>
+                        </div>
                     </div>
                 </div>
             `;
-        });
+        }
         subjectsContainer.innerHTML = html;
 
-        // Attach click events for topics (to toggle lectures)
-        subjectsContainer.querySelectorAll('.topic-item').forEach((item) => {
-            item.addEventListener('click', (e) => {
+        // Attach click events for subjects → load topics
+        subjectsContainer.querySelectorAll('.subject-item').forEach((item) => {
+            item.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const lecContainer = item.querySelector('.lectures-container');
-                if (lecContainer) {
-                    lecContainer.classList.toggle('open');
-                }
-            });
-        });
+                const topicsContainer = item.querySelector('.topics-container');
+                const subjectId = item.dataset.subjectid;
+                const batchId = item.dataset.batchid;
 
-        // Attach watch events
-        subjectsContainer.querySelectorAll('.btn-watch').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const batchId = btn.dataset.batchid;
-                const subjectId = btn.dataset.subjectid;
-                const topicId = btn.dataset.topicid;
-                const videoId = btn.dataset.videoid;
-                const videoUrl = btn.dataset.videourl;
-                const videoName = btn.dataset.videoname;
-
-                // If videoUrl is empty, try to get it from a proxy or use a fallback
-                if (!videoUrl) {
-                    alert('Video URL not available for this lecture.');
+                if (topicsContainer.classList.contains('open')) {
+                    topicsContainer.classList.remove('open');
                     return;
                 }
 
-                // Build the play.php URL
-                const watchUrl = buildWatchUrl(
-                    batchId,
-                    subjectId,
-                    topicId,
-                    videoId,
-                    videoUrl,
-                    videoName,
-                    ''
-                );
-
-                // Instead of playing directly, open the vidcloud page
-                // or extract the signed URL from it.
-                // For now, we'll open it in a new tab.
-                window.open(watchUrl, '_blank');
-            });
-        });
-
-        // Toggle subjects on click
-        subjectsContainer.querySelectorAll('.subject-item').forEach((item) => {
-            item.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const topicsContainer = item.querySelector('.topics-container');
-                if (topicsContainer) {
-                    topicsContainer.classList.toggle('open');
+                topicsContainer.classList.add('open');
+                if (topicsContainer.dataset.loaded === 'false') {
+                    await loadTopics(batchId, subjectId, topicsContainer, item);
+                    topicsContainer.dataset.loaded = 'true';
                 }
             });
         });
@@ -423,64 +268,139 @@ async function expandBatch(batchId) {
         console.error('Error loading subjects:', error);
         subjectsContainer.innerHTML = `
             <div style="color:var(--danger);padding:12px;text-align:center;">
-                Error loading subjects: ${error.message}
+                Error: ${error.message}
             </div>
         `;
     }
 }
 
 // ============================================================
-// FETCH SUBJECTS (Simulated / Replace with your API)
+// LOAD TOPICS → /api/SubjectInfo
 // ============================================================
-async function fetchSubjects(batchId) {
-    // This is sample data – in production, you'd call your proxy API
-    // For now, we'll use the data from your logs
-    const sampleSubjects = {
-        '6779346f920e596fe7f0e247': [
-            {
-                id: '69bebebd0f88909eec54104a',
-                name: 'Zoology By Samapti Sinha Ma\'am',
-                topics: [
-                    {
-                        id: '69ccc6b5a01f2569524bfa89',
-                        name: 'Reproductive Health',
-                        lectures: [
-                            {
-                                id: '6a0ec3173aa0cd64d08f52e4',
-                                name: 'Reproductive Health 06',
-                                video_url: 'https://d1d34p8vz63oiq.cloudfront.net/ad90c7c7-d43a-44ea-9c0a-6f1271468d9e/master.mpd'
-                            }
-                        ]
-                    }
-                ]
-            }
-        ],
-        '69047c05fc3bb2dd64711bd8': [
-            {
-                id: 'physics-145369',
-                name: 'Physics',
-                topics: [
-                    {
-                        id: 'basic-mathematics-894431',
-                        name: 'Basic Mathematics',
-                        lectures: [
-                            {
-                                id: '695214ad40b8c215c300685f',
-                                name: 'Basic Mathematics 01',
-                                video_url: 'https://d1d34p8vz63oiq.cloudfront.net/3c022c52-c8e9-4054-9f82-57b72d583162/master.mpd'
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    };
+async function loadTopics(batchId, subjectId, container, subjectItem) {
+    try {
+        const url = `https://pwthor.live/api/SubjectInfo?BatchId=${batchId}&SubjectId=${subjectId}&page=1`;
+        const data = await apiFetch(url);
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 600));
+        const topics = data.data || [];
+        const countEl = subjectItem.querySelector('.subject-count');
+        if (countEl) countEl.textContent = `${topics.length} topics`;
 
-    // Return sample data if available, otherwise empty
-    return sampleSubjects[batchId] || [];
+        if (topics.length === 0) {
+            container.innerHTML = `
+                <div style="color:var(--text-secondary);padding:8px;font-size:13px;">
+                    No topics found.
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        for (const topic of topics) {
+            const topicId = topic._id || topic.tagId || topic.slug;
+            const topicName = topic.name || 'Unnamed';
+            const vidCount = topic.videos || topic.lectureVideos || 0;
+
+            html += `
+                <div class="topic-item" data-topicid="${topicId}" data-batchid="${batchId}" data-subjectid="${subjectId}">
+                    <div class="topic-header">
+                        <span class="topic-name">${topicName}</span>
+                        <span class="topic-lecture-count">${vidCount} videos</span>
+                    </div>
+                    <div class="lectures-container" data-loaded="false">
+                        <div class="loading-spinner" style="padding:8px;">
+                            <div class="spinner" style="width:16px;height:16px;"></div>
+                            <p style="font-size:12px;">Loading lectures...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+
+        // Attach click events for topics → load lectures
+        container.querySelectorAll('.topic-item').forEach((item) => {
+            item.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const lecContainer = item.querySelector('.lectures-container');
+                const topicId = item.dataset.topicid;
+                const batchId = item.dataset.batchid;
+                const subjectId = item.dataset.subjectid;
+
+                if (lecContainer.classList.contains('open')) {
+                    lecContainer.classList.remove('open');
+                    return;
+                }
+
+                lecContainer.classList.add('open');
+                if (lecContainer.dataset.loaded === 'false') {
+                    await loadLectures(batchId, subjectId, topicId, lecContainer);
+                    lecContainer.dataset.loaded = 'true';
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error('Error loading topics:', error);
+        container.innerHTML = `
+            <div style="color:var(--danger);padding:8px;font-size:13px;">
+                Error: ${error.message}
+            </div>
+        `;
+    }
+}
+
+// ============================================================
+// LOAD LECTURES → /api/TopicInfo (gets ChildId)
+// ============================================================
+async function loadLectures(batchId, subjectId, topicId, container) {
+    try {
+        const url = `https://pwthor.live/api/TopicInfo?BatchId=${batchId}&SubjectId=${subjectId}&TopicId=${topicId}&ContentType=videos&page=1`;
+        const data = await apiFetch(url);
+
+        const lectures = data.data || [];
+
+        if (lectures.length === 0) {
+            container.innerHTML = `
+                <div style="color:var(--text-secondary);padding:6px;font-size:13px;">
+                    No lectures found.
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        lectures.forEach((lec) => {
+            const childId = lec._id || lec.ChildId;
+            const name = lec.topic || lec.name || 'Lecture';
+            const isLocked = lec.isLocked !== undefined ? lec.isLocked : false;
+
+            const watchUrl = buildWatchUrl(batchId, subjectId, childId, isLocked);
+
+            html += `
+                <div class="lecture-item">
+                    <span class="lecture-name">
+                        ${name}
+                        ${isLocked ? '🔒' : ''}
+                    </span>
+                    <div class="lecture-actions">
+                        <button class="btn-watch" onclick="window.open('${watchUrl}', '_blank')">
+                            ▶ Watch
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+
+    } catch (error) {
+        console.error('Error loading lectures:', error);
+        container.innerHTML = `
+            <div style="color:var(--danger);padding:6px;font-size:13px;">
+                Error: ${error.message}
+            </div>
+        `;
+    }
 }
 
 // ============================================================
@@ -514,9 +434,9 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchBatches();
 });
 
-// Make functions globally accessible for inline onclick
+// Make functions globally accessible
 window.fetchBatches = fetchBatches;
 window.expandBatch = expandBatch;
+window.loadTopics = loadTopics;
+window.loadLectures = loadLectures;
 window.buildWatchUrl = buildWatchUrl;
-window.openModal = openModal;
-window.closeModal = closeModal;
