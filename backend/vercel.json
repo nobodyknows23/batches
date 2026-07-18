@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "server.js"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type,Authorization,client-type,client-id,client-version" }
+      ]
+    }
+  ],
+  "env": {
+    "PW_TOKEN": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3ODQzMDE5NDgsImV4cCI6MTc4NDkwNjc0OC41NTEsImRhdGEiOnsiX2lkIjoiNjhlYjNkMWYwNTkxMWE3ZDU5OThkZWIxIiwidXNlcm5hbWUiOiI5MTAzODA4NzgyIiwiZmlyc3ROYW1lIjoiV2FyaXMgTXVraHRhciIsImxhc3ROYW1lIjoiIiwib3JnYW5pemF0aW9uIjp7Il9pZCI6IjVlYjM5M2VlOTVmYWI3NDY4YTc5ZDE4OSIsIndlYnNpdGUiOiJwaHlzaWNzd2FsbGFoLmNvbSIsIm5hbWUiOiJQaHlzaWNzd2FsbGFoIn0sInJvbGVzIjpbIjViMjdiZDk2NTg0MmY5NTBhNzc4YzZlZiJdLCJjb3VudHJ5R3JvdXAiOiJJTiIsIm9uZVJvbGVzIjpbXSwidHlwZSI6IlVTRVIifSwianRpIjoiUzVyWm15NFhRVTYyNGlYVlhiUlAyQV82OGViM2QxZjA1OTExYTdkNTk5OGRlYjEifQ.ZOUYaXDsi1w0oacKYllnwbGsqAp-y0l6iIzEuy8xmo0"
+  }
+}
